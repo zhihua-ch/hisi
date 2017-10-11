@@ -1,0 +1,20 @@
+BASEDIR = .
+include ./Makefile.para
+
+OBJS = main.o init.o fvideo.o videoenc.o
+OBJS += dvr/i2c/i2c.o\
+		dvr/sysreg/sys_reg_public.o
+
+myrec : $(OBJS)
+	$(RM) $@;
+	$(AR) $(AFLAGS) $@ $^
+	@echo "@@@@@@@@@@@make myrec succ......."
+	
+.c.o:
+	$(CC)  $(CFLAGS) -c -o $@ $<
+
+.cpp.o:
+	$(CPP)  $(CFLAGS) -c -o $@ $<
+
+clean:
+	rm $(OBJS) -f

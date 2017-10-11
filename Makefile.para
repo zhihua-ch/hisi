@@ -1,0 +1,31 @@
+CROSS = arm-hisiv100nptl-linux-
+
+CPP	=	@echo " g++ $@"; $(CROSS)g++
+CC	=	@echo " gcc $@"; $(CROSS)gcc
+LD	= @echo " LD	$@"; $(CROSS)ld
+AR	= @echo " AR	$@"; $(CROSS)ar
+RM	= @echo " RM	$@"; rm -f
+ 
+LIBDIR = $(BASEDIR)/lib
+CFLAGS += -I$(BASEDIR)/include/3521mpi
+CFLAGS += -I$(BASEDIR)/include/APIs
+CFLAGS += -I$(BASEDIR)/include/libhicap
+
+#The C and C++ standards allows the character type char to be signed or unsigned, 
+#depending on the platform and compiler. Most systems, 
+#including x86 GNU/Linux and Microsoft Windows, use signed char, 
+#but those based on PowerPC and ARM processors typically use unsigned char
+#This can lead to unexpected results when porting programs between platforms 
+#which have different defaults for the type of char
+CFLAGS	+= -fsigned-char -Wformat
+#CFLAGS	+= -fomit-frame-pointer
+#CFLAGS	+= -Wstrict-prototypes
+ifeq ($(debug), 1)
+CFLAGS	+= -Wall -g
+else
+CFLAGS	+= -Wall -O2
+endif
+CFLAGS	+= -D_REENTRANT 
+CFLAGS	+= -pipe
+
+CFLAGS	+= -D_BIT_FIELDS_LTOH #LittleEndian 

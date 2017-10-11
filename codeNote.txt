@@ -1,0 +1,90 @@
+
+CDevVideo:videocreate;
+DeviceManager.cpp
+CDevVideo::GetChannels();
+g_nCapture = ICaptureManager::instance()->GetAnalogChnNum();//CDevCapture::GetChannels ();
+	g_nLogicNum= ICaptureManager::instance()->GetLogicChnNum();
+
+	int iVSD = CConfigLocation::getLatest().iVideoFormat;
+	//trace("\n\n#########3iVSD:%d\n\n", iVSD);
+	for (int i = 0; i < g_nCapture; i++)
+	{
+		CDevCapture::instance(i)->SetVstd(iVSD);// had got video stream and audio stream
+	}
+
+	for (i = 0; i < g_nVideoOut; i++)
+	{
+		pVideo[i]		=	CDevVideo::instance(i);
+		pSplitter[i]		=	CDevSplit::instance(i);
+	}    
+
+    pExCapture =  CDevExCapture::instance(0);
+
+General.cpp
+    for(int chn=0; chn < g_nCapture; chn++)
+	{
+		CDevVideo::instance(0)->SetVstd(chn, VIDEO_STANDARD_AUTO);
+	}
+
+    bool bNeedReboot = false;
+    int norm = CDevVideo::instance(0)->GetVstd(0);
+   
+	int iVSD = cfgLocation.iVideoFormat;        
+
+    	for (int i = 0; i < g_nCapture; i++)
+	{
+		CDevCapture::instance(i)->SetVstd(iVSD);
+	}
+	CDevExCapture::instance(0)->SetVstd(iVSD);
+
+MAIN.cpp
+	ICaptureManager::instance();
+
+    #ifndef SYS_NO_GUI
+    g_GUI.Start();                //初始化GUI
+    pPageStart = new CPageStart(NULL, "Start");
+    pPageStart->Open();            //打开启动页面
+
+    g_Encode.Start();/*!< 启动编码功能 */ AppEncodeConfig(); pDevCapture->Start();VencChn_Start(){HI_MPI_VENC_StartRecvPic};
+
+    g_Record.Start();  Record.cpp   --> SetRecordDev(m_RecordDevice); flash,disc,usb & pworkDir
+ 	CAppEventManager::instance()->attach(this, (SIG_EVENT::SigProc)&CRecordManager::onAppEvent);
+         可查signal_s.h   CRecordManager::onAppEvent(); 处理录像开始,录像停止
+	if (!ICapture::instance(m_iChannel)->Start(this, (ICapture::SIG_DEV_CAP_BUFFER)&CRecordStorage::onRecord, dwFlag))         
+    CRecordStorage::onRecord(); writeStorage();
+    
+VideoEnc.c
+    VEncChn_Start()  			s32Ret = HI_MPI_VENC_StartRecvPic( vencChn );         
+
+hisiSDK sample video  encode  process
+   HI_MPI_VENC_RegisterChn();
+   HI_MPI_VENC_StartRecvPic();
+   HI_MPI_SYS_BIND();
+   pthread_create(&gs_VencPid, 0, SAMPLE_COMM_VENC_GetVencStreamProc, (HI_VOID*)&gs_stPara);
+HI_VOID* SAMPLE_COMM_VENC_GetVencStreamProc(HI_VOID *p){
+    HI_MPI_VENC_GetChnAttr();
+    pFile[i] = fopen(aszFileName[i], "wb");
+    VencFd[i] = HI_MPI_VENC_GetFd(i);    
+    s32Ret = select(maxfd + 1, &read_fds, NULL, NULL, &TimeoutVal);    
+    s32Ret = HI_MPI_VENC_Query(i, &stStat);    --VencGetStream--AVenc.c--libhicap CDevCapture::SetVstd
+    stStream.pstPack = (VENC_PACK_S*)malloc(sizeof(VENC_PACK_S) * stStat.u32CurPacks);                
+    s32Ret = HI_MPI_VENC_GetStream(i, &stStream, HI_TRUE);
+    s32Ret = SAMPLE_COMM_VENC_SaveStream(enPayLoadType[i], pFile[i], &stStream);
+      fwrite(pstStream->pstPack[i].pu8Addr[0],
+               pstStream->pstPack[i].u32Len[0], 1, fpH264File);
+
+        fflush(fpH264File);
+    s32Ret = HI_MPI_VENC_ReleaseStream(i, &stStream);
+    free(stStream.pstPack);
+    fclose(pFile[i]);                                                                                   
+    }   
+9.14 以hisi mpp为基础 抄写录像(注意板子起始设置);SD录像;    
+vcam6 process- nvp6124 CreateVideo;ViPubConfig(),CaptureDevInit(),Local_captureSetVsd()
+CDevCapture::SetVstd();==videv
+ViChnConfig();-HI_MPI_VI_SetChnAttr();
+
+VencGetThread();  VencGetStream();
+HI_MPI_VENC_GetStream();HI_MPI_VENC_Start_RecvPic();
+10.10决定借鉴vcam已有的头文件层次（缩减内容）
+10.11 打算libdvr libhicap libfvideo不再是库的形式。在各自的文件夹以源码的方式与根目录的应用程序一起编译.
+目前只做了"dvr"
