@@ -7,25 +7,51 @@ AR	= @echo " AR	$@"; $(CROSS)ar
 RM	= @echo " RM	$@"; rm -f
  
 LIBDIR = $(BASEDIR)/lib
+
 CFLAGS += -I$(BASEDIR)/include/3521mpi
 CFLAGS += -I$(BASEDIR)/include/APIs
 CFLAGS += -I$(BASEDIR)/include/libhicap
 
-#The C and C++ standards allows the character type char to be signed or unsigned, 
-#depending on the platform and compiler. Most systems, 
-#including x86 GNU/Linux and Microsoft Windows, use signed char, 
-#but those based on PowerPC and ARM processors typically use unsigned char
-#This can lead to unexpected results when porting programs between platforms 
-#which have different defaults for the type of char
-CFLAGS	+= -fsigned-char -Wformat
-#CFLAGS	+= -fomit-frame-pointer
-#CFLAGS	+= -Wstrict-prototypes
-ifeq ($(debug), 1)
-CFLAGS	+= -Wall -g
-else
-CFLAGS	+= -Wall -O2
-endif
-CFLAGS	+= -D_REENTRANT 
-CFLAGS	+= -pipe
+LDLIBS += $(COMLIBS_HISI)
+#LDLIBS += $(LIBSDIR)/
 
-CFLAGS	+= -D_BIT_FIELDS_LTOH #LittleEndian 
+COMLIBSDIR_HISI=$(BASEDIR)/lib
+
+COMLIBS_HISI =  	\
+	$(COMLIBSDIR_HISI)/libmpi.a \
+	$(COMLIBSDIR_HISI)/libVoiceEngine.a \
+	$(COMLIBSDIR_HISI)/libaec.a \
+	$(COMLIBSDIR_HISI)/libanr.a \
+	$(COMLIBSDIR_HISI)/libhdmi.a \
+	$(COMLIBSDIR_HISI)/libjpeg6b.a \
+	$(COMLIBSDIR_HISI)/libmem.a \
+	$(COMLIBSDIR_HISI)/libresampler.a \
+	$(COMLIBSDIR_HISI)/libtde.a \
+	$(COMLIBSDIR_HISI)/libvqev2.a
+
+CFLAGS	=	-Wall
+CFLAGS	+=	-I.
+
+LFLAGS	=	-lpthread -Wl,-S $(LDLIBS)
+
+COMPILEOPT=-static
+
+
+##The C and C++ standards allows the character type char to be signed or unsigned, 
+##depending on the platform and compiler. Most systems, 
+##including x86 GNU/Linux and Microsoft Windows, use signed char, 
+##but those based on PowerPC and ARM processors typically use unsigned char
+##This can lead to unexpected results when porting programs between platforms 
+##which have different defaults for the type of char
+#CFLAGS	+= -fsigned-char -Wformat
+##CFLAGS	+= -fomit-frame-pointer
+##CFLAGS	+= -Wstrict-prototypes
+#ifeq ($(debug), 1)
+#CFLAGS	+= -Wall -g
+#else
+#CFLAGS	+= -Wall -O2
+#endif
+#CFLAGS	+= -D_REENTRANT 
+#CFLAGS	+= -pipe
+
+#CFLAGS	+= -D_BIT_FIELDS_LTOH #LittleEndian 
