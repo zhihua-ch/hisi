@@ -10,10 +10,8 @@ DIST_MAP := myrec.Map
 myrec : $(OBJS)
 	$(CC) $(CFLAGS) $(COMPILEOPT) -o $@ $+ $(LFLAGS) -Wl,-Map,$(DIST_MAP)
 
-#$(CPP) $(CFLAGS) $(COMPILEOPT) -o $@ $+ $(LFLAGS) -Wl,-Map,$(DIST_MAP)
-
 .c.o:
-	$(CC)  $(CFLAGS) -c -o $@ $<
+	$(CC) -c $(CFLAGS) $< -o $@ 
 
 .cpp.o:
 	$(CPP)  $(CFLAGS) -c -o $@ $<
@@ -21,3 +19,4 @@ myrec : $(OBJS)
 clean:
 	rm $(OBJS) -f
 
+#$(CPP) $(CFLAGS) $(COMPILEOPT) -o $@ $+ $(LFLAGS) -Wl,-Map,$(DIST_MAP)

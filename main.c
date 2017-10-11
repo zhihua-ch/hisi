@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <signal.h>
-#include "DVRINC.H"
+#include "dvrinc.h"
 #include "avenc.h"
 
 #define VENC_TEST   1
