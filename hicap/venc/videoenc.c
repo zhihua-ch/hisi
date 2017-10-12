@@ -4,7 +4,7 @@
 #include "VideoEnc.h"
 #include "Capture.h"
 //!private
-
+#define NO_SNAP_IN_LIB 1
 int GetSubTypeByType(VENC_CHN_T* vchn, enum capture_channel_t type)
 {
 #ifndef	_USE_720P_MODULE_
@@ -411,7 +411,7 @@ void VEncChn_Init_General(VENC_CHN_T* vchn, int chn)
 	vchn->venc_jpeg.started = 0;
 	vchn->venc_jpeg.nFps = 0;
 
-	InitOsdSize(chn);
+//	InitOsdSize(chn); temporary
 	
 	//!ȷ����vi�Ѿ���
 	s32Ret = VIM_Start( VIM_GetIns(), chn );
@@ -819,14 +819,14 @@ void VEncChn_Exit(VENC_CHN_T* vchn)
 	VENC_GRP VeGroup;
 	VPSS_GRP VpssGrp;
 	
-	VEncChn_Destory_Inner(vchn, CHL_JPEG_T, HI_FALSE);
+//	VEncChn_Destory_Inner(vchn, CHL_JPEG_T, HI_FALSE);
 	VEncChn_Destory_Inner(vchn, CHL_2END_T, HI_FALSE);
 	VEncChn_Destory_Inner(vchn, CHL_MAIN_T, HI_FALSE);
 
 	pthread_mutex_destroy(&(vchn->venc_chn[0].lock));
 	pthread_mutex_destroy(&(vchn->venc_chn[1].lock));
-	pthread_mutex_destroy(&(vchn->venc_jpeg.lock));
-
+//	pthread_mutex_destroy(&(vchn->venc_jpeg.lock));
+#if 0
 	//!����jpeg������
 	VeGroup = GetVencGrpByChn(vchn->Chn,CHL_JPEG_T);
 	VpssGrp=GetVpssJpegGrpByChn(vchn->Chn);
@@ -834,7 +834,7 @@ void VEncChn_Exit(VENC_CHN_T* vchn)
 	HI_ASSERT(s32Ret == HI_SUCCESS );
 	s32Ret = HI_MPI_VENC_DestroyGroup(VeGroup);
 	HI_ASSERT(s32Ret == HI_SUCCESS );
-
+#endif
 	//!���붨�������ٱ�����
 	VeGroup = GetVencGrpByChn(vchn->Chn,CHL_MAIN_T);
 	VpssGrp=GetVpssGrpByChn(vchn->Chn);

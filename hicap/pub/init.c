@@ -8,6 +8,7 @@ int g_voOutputType = VO_OUTPUT_TYPE_1920_1080;    ///< 默认是1920高清
 enum video_standard_t  g_videostd=VIDEO_STANDARD_PAL;
 enum capture_size_t g_videosize = CAPTURE_SIZE_1080P;
 
+static VI_MANAGER_T g_ViM = {0};
 int vim_init(VIDEO_NORM_E vstd){
 	HI_S32 s32Ret;
     enum capture_size_t video_size;
@@ -26,7 +27,33 @@ int vim_init(VIDEO_NORM_E vstd){
     if(s32Ret != 0)
     {
         return s32Ret;
+	}
+	return 0;
+}
+/*****************************************************************************
+* function : Vi chn bind vpss group
+*****************************************************************************/
+HI_S32  vibind2vpss(VI_CHN ViChn,VPSS_GRP VpssGrp)
+{
+    HI_S32 s32Ret;
+    MPP_CHN_S stSrcChn;
+    MPP_CHN_S stDestChn;
+	
+    stSrcChn.enModId = HI_ID_VIU;
+    stSrcChn.s32DevId = 0;
+    stSrcChn.s32ChnId = ViChn;
+
+    stDestChn.enModId = HI_ID_VPSS;
+    stDestChn.s32DevId = VpssGrp;
+    stDestChn.s32ChnId = 0;
+
+    s32Ret = HI_MPI_SYS_Bind(&stSrcChn, &stDestChn);
+    if (s32Ret != HI_SUCCESS)
+    {
+        SAMPLE_PRT("failed with %#x!\n", s32Ret);
+        return HI_FAILURE;
     }
+    return HI_SUCCESS;
 }
 
 /*****************************************************************************
@@ -99,19 +126,19 @@ HI_S32 ViChnConfig(int channel, HI_U16 image_size, VIDEO_NORM_E normal)
     VI_DEV ViDev;
     VI_CHN ViChn;
 	VPSS_GRP vpss_grp;
-	VPSS_GRP vpss_jpeg_grp;
+	/*VPSS_GRP vpss_jpeg_grp;
 	VPSS_GRP vpss_vdec_grp;
 	VPSS_GRP vpss_hdclip_grp;
-	VPSS_GRP vpss_vdec_snap_grp;
+	VPSS_GRP vpss_vdec_snap_grp;*/
     HI_U32 u32SrcFrmRate;
 	SIZE_S stSize;
     ViDev = GetViDevByChn(channel);
     ViChn = GetViChnByChn(channel);
 	vpss_grp = GetVpssGrpByChn(channel);
-	vpss_jpeg_grp = GetVpssJpegGrpByChn(channel);
-	vpss_vdec_grp = GetVpssVdecGrpByChn(channel);
-	vpss_hdclip_grp = GetVpssHdClipGrpByChn(channel);
-	vpss_vdec_snap_grp = GetVpssJpegManualGrpByChn(channel);
+	//vpss_jpeg_grp = GetVpssJpegGrpByChn(channel);
+	//vpss_vdec_grp = GetVpssVdecGrpByChn(channel);
+	//vpss_hdclip_grp = GetVpssHdClipGrpByChn(channel);
+	//vpss_vdec_snap_grp = GetVpssJpegManualGrpByChn(channel);
     memset(&ViChnAttr, 0, sizeof(VI_CHN_ATTR_S));
 
     ViChnAttr.stCapRect.s32X = 0;
@@ -164,7 +191,7 @@ HI_S32 ViChnConfig(int channel, HI_U16 image_size, VIDEO_NORM_E normal)
         return HI_FAILURE;
     }
 	//绑定JPEG抓图VPSS
-	stSize.u32Width= 1920;
+	/*stSize.u32Width= 1920;
 	stSize.u32Height = 1080;
 	s32Ret = SAMPLE_COMM_VPSS_Start(vpss_jpeg_grp, &stSize, VPSS_MAX_CHN_NUM,NULL);
     if (HI_SUCCESS != s32Ret)
@@ -178,7 +205,7 @@ HI_S32 ViChnConfig(int channel, HI_U16 image_size, VIDEO_NORM_E normal)
     {
         SAMPLE_PRT("Vi bind Vpss failed!\n");
         return HI_FAILURE;
-    }
+    }*/
 #if 0//和抓拍共用一个VPSS
 	//绑定HD ZOOM VPSS
 	stSize.u32Width= 1920;
@@ -198,14 +225,14 @@ HI_S32 ViChnConfig(int channel, HI_U16 image_size, VIDEO_NORM_E normal)
     }
 #endif
 	//绑定解码VPSS
-	stSize.u32Width= 1920;
+	/*stSize.u32Width= 1920;
 	stSize.u32Height = 1080;
 	s32Ret = SAMPLE_COMM_VPSS_Start(vpss_vdec_grp, &stSize, VPSS_MAX_CHN_NUM,NULL);
     if (HI_SUCCESS != s32Ret)
     {
         SAMPLE_PRT("Start Vpss failed!vpss_jpeg_grp=%d\n",vpss_jpeg_grp);
         return HI_FAILURE;
-    }
+    }*/
 #if 0
 	stSize.u32Width= 1920;
 	stSize.u32Height = 1080;
@@ -220,6 +247,284 @@ HI_S32 ViChnConfig(int channel, HI_U16 image_size, VIDEO_NORM_E normal)
     return HI_SUCCESS;
 
 }
+int GetViDevByChn( int chn )
+{
+    assert(chn >=0 && chn < N_SYS_CH);
+    DVR_CHN_M_T* pIns = DCM_GetIns();
+    return pIns->chn[chn].vi_dev;
+}
+int GetViChnByChn( int chn )
+{
+    assert(chn >=0 && chn < N_SYS_CH);
+    DVR_CHN_M_T* pIns = DCM_GetIns();
+    return pIns->chn[chn].vi_chn;
+
+}
+int GetVpssGrpByChn( int chn )
+{
+    assert(chn >=0 && chn < N_SYS_CH);
+    DVR_CHN_M_T* pIns = DCM_GetIns();
+    return pIns->chn[chn].vpss_grp;
+}
+VI_MANAGER_T* VIM_GetIns()
+{
+    return &g_ViM;
+}
+VIDEO_NORM_E VIM_GetVsvd(VI_MANAGER_T* pThis)
+{
+    return pThis->m_vstd;
+}
+enum capture_size_t GetSizeByWH(int width, int height)
+{
+    enum capture_size_t size;
+
+    switch( width)
+    {
+        case 704:
+            size = CAPTURE_SIZE_D1;
+            break;
+        case 640:
+            size = CAPTURE_SIZE_VGA;
+            break;    
+        case 320:
+            size = CAPTURE_SIZE_QVGA;
+            break;        
+        case 352:
+            size = CAPTURE_SIZE_CIF;
+            break;
+        case 176:
+            size = CAPTURE_SIZE_QCIF;
+            break;
+        case 1024:
+            size =CAPTURE_SIZE_XVGA;
+            break;
+        case 1280:
+            size=CAPTURE_SIZE_720P;
+            break;
+        case 1920:
+            size=CAPTURE_SIZE_1080P;
+            break;            
+        default:
+            assert(0);
+            break;
+    }
+       if(width==704&&(height==288||height==240))
+           size=CAPTURE_SIZE_HD1;
+       if((width==1280)&&(height==1024))
+              size=CAPTURE_SIZE_SXGA;
+ 
+    return size;
+}
+
+int GetWidthBySize( enum capture_size_t size, VIDEO_NORM_E vstd)
+{
+    int ret=0;
+    switch(size)
+    {
+        case CAPTURE_SIZE_D1:
+        {
+           ret =704;
+            break;
+        }
+        case CAPTURE_SIZE_VGA:
+        {
+            ret = 640;
+            break;
+        }
+        case CAPTURE_SIZE_CIF:
+        {
+            ret =352;
+            break;
+        }
+        case CAPTURE_SIZE_QCIF:
+        {
+            ret =176;
+            break;
+        }
+        case CAPTURE_SIZE_QVGA:
+        {
+
+               ret = 320;
+            break;
+        }        
+        case CAPTURE_SIZE_HD1:
+        {
+            ret =704;
+            break;        
+        }
+        case CAPTURE_SIZE_XVGA:
+        {
+            ret = 1024;
+            break;
+        }
+        case CAPTURE_SIZE_SXGA:
+        {
+            ret = 1280;
+            break;
+        }
+        case CAPTURE_SIZE_720P:
+        {
+            ret=1280;
+            break;
+        }
+        case CAPTURE_SIZE_1080P:
+        {
+            ret=1920;
+            break;
+        }
+        case CAPTURE_SIZE_UXGA:
+        {
+            ret=1600;
+            break;
+        }   
+        case CAPTURE_SIZE_WUXGA:
+        {
+            ret=1920;
+            break;
+        }                
+        default:
+        {
+            LIBDVR_PRINT("not support the image size:%d\n", size);
+            break;
+        }
+
+    }
+    return ret;
+}
+
+int GetHeightBySize( enum capture_size_t size, VIDEO_NORM_E vstd)
+{
+    int ret=0;
+    switch(size)
+    {
+        case CAPTURE_SIZE_D1:
+        {
+            ret =( vstd == VIDEO_STANDARD_PAL ? 576 : 480 );
+            break;
+        }
+        case CAPTURE_SIZE_VGA:
+        {
+            ret = 480;
+            break;
+        }
+        case CAPTURE_SIZE_HD1:
+        {
+            ret =( vstd == VIDEO_STANDARD_PAL ? 288 : 240 );
+            break;
+        }
+        case CAPTURE_SIZE_CIF:
+        {
+            ret =( vstd == VIDEO_STANDARD_PAL ? 288 : 240 );
+            break;
+        }
+        case CAPTURE_SIZE_QCIF:
+        {
+#if defined(HI_SDK3515_103) || defined(HI_SDK3520_106)
+            ret =( vstd == VIDEO_STANDARD_PAL ? 144 : 120);
+#else
+            ret =( vstd == VIDEO_STANDARD_PAL ? 144 : 112);//这里需注意
+#endif
+            break;
+        }
+        case CAPTURE_SIZE_QVGA:
+        {
+
+               ret = 240;
+            break;
+        }
+        case CAPTURE_SIZE_XVGA:
+        {
+            ret = 768;
+            break;
+        }
+        case CAPTURE_SIZE_SXGA:
+        {
+            ret = 1024;
+            break;
+        }
+        case CAPTURE_SIZE_720P:
+        {
+            ret=720;
+            break;
+        }
+        case CAPTURE_SIZE_1080P:
+        {
+            ret=1080;
+            break;
+        }        
+        case CAPTURE_SIZE_UXGA:
+        {
+            ret=1200;
+            break;
+        }        
+        case CAPTURE_SIZE_WUXGA:
+        {
+            ret=1200;
+            break;
+        }        
+        default:
+        {
+            LIBDVR_PRINT("not support the image size:%d\n", size);
+            break;
+        }
+
+    }
+    return ret;
+}
+int GetRate(VIDEO_NORM_E vstd)
+{
+    if( vstd == VIDEO_ENCODING_MODE_PAL )
+    {
+        return 25;
+    }
+    else if( vstd == VIDEO_ENCODING_MODE_NTSC )
+    {
+        return 30;
+    }
+
+    assert(0);
+
+    return 0;
+}
+
+DVR_CHN_M_T g_dcm = {0};
+DVR_CHN_M_T* DCM_GetIns()
+{
+    return &g_dcm;
+}
+VENC_CHN GetVencChnByChn( int chn,  enum capture_channel_t type )
+{
+    assert(type == CHL_MAIN_T || type == CHL_2END_T || type == CHL_JPEG_T || type == CHL_3IRD_T);
+    assert(chn >=0 && chn < N_SYS_CH);
+
+    DVR_CHN_M_T* pIns = DCM_GetIns();
+    return pIns->chn[chn].venc_chn[type];
+}
+VENC_GRP GetVencGrpByChn( int chn,  enum capture_channel_t type )
+{
+    assert(chn >=0 && chn < N_SYS_CH);
+    DVR_CHN_M_T* pIns = DCM_GetIns();
+    return pIns->chn[chn].venc_grp[type];
+}
+int VIM_Start(VI_MANAGER_T* pThis, int chn)
+{
+    HI_S32 s32Ret;
+    VI_DEV chn_dev = GetViDevByChn(chn);
+    VI_CHN chn_vi = GetViChnByChn(chn);
+
+    if( pThis->m_vi_chn_state[chn_dev][chn_vi] == 1 )
+    {
+        return HI_SUCCESS;
+    }
+
+    s32Ret = HI_MPI_VI_EnableChn(chn_vi );
+    if( s32Ret == HI_SUCCESS )
+    {
+        pThis->m_vi_chn_state[chn_dev][chn_vi] = 1;
+    }
+    return s32Ret;
+}
+
 #if 0
 void VEncChn_Init_General(VENC_CHN_T *vchn, int chn)
 {

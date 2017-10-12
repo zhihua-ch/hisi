@@ -18,6 +18,9 @@ typedef struct _nvp6124_video_mode
 	unsigned char vformat[16];
 	unsigned char chmode[16];
 }nvp6124_video_mode;
+void nvp6124_pal_common_init(void);
+void nvp6124_ntsc_common_init(void);
+void nvp6124_each_mode_setting(nvp6124_video_mode *pvmode );
 
 int nvp6124_videoCreate(void);
 int nvp6124_videoDestory(void);

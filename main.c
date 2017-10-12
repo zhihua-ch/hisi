@@ -6,9 +6,13 @@
 #include <signal.h>
 #include "dvrinc.h"
 #include "avenc.h"
+#include "hi_comm_aenc.h"
+#include "initial.h"
 
 #define VENC_TEST   1
+
 int VencGetThread(void *arg);
+static void VencMaxFd(Capture_Dev_t* pThis, HI_S32 fd);
 
 int main(int argc, char *argv[]){
     //packetmanager::config(); 40M
@@ -55,6 +59,15 @@ int main(int argc, char *argv[]){
     //CExCaptureManager::Init();
 
     nvp6124_videoGetVstd();
+}
+static void VencMaxFd(Capture_Dev_t* pThis, HI_S32 fd)
+{
+	FD_SET(fd,&(pThis->read_fds));
+	if(fd > pThis->MaxVencFd)
+	{
+		pThis->MaxVencFd = fd;
+	}
+	return ;
 }
 
 int VencGetThread(void *arg){

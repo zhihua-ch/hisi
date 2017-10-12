@@ -8,12 +8,12 @@ RM	= @echo " RM	$@"; rm -f
  
 LIBDIR = $(BASEDIR)/lib
 
-CFLAGS += -I$(BASEDIR)/include/3521mpi
-CFLAGS += -I$(BASEDIR)/include/APIs
-CFLAGS += -I$(BASEDIR)/include/libhicap
+#CFLAGS += -I$(BASEDIR)/include/3521mpi
+#CFLAGS += -I$(BASEDIR)/include/APIs
+#CFLAGS += -I$(BASEDIR)/include/libhicap
 
 LDLIBS += $(COMLIBS_HISI)
-#LDLIBS += $(LIBSDIR)/
+
 
 COMLIBSDIR_HISI=$(BASEDIR)/lib
 
@@ -29,12 +29,12 @@ COMLIBS_HISI =  	\
 	$(COMLIBSDIR_HISI)/libtde.a \
 	$(COMLIBSDIR_HISI)/libvqev2.a
 
-CFLAGS	=	-Wall
-CFLAGS	+=	-I.
+#CFLAGS	=	-Wall
+#CFLAGS	+=	-I.
 
-LFLAGS	=	-lpthread -Wl,-S $(LDLIBS)
+#LFLAGS	=	-lpthread -Wl,-S $(LDLIBS)
 
-COMPILEOPT=-static
+#COMPILEOPT=-static
 
 
 ##The C and C++ standards allows the character type char to be signed or unsigned, 

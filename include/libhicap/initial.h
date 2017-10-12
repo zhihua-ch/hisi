@@ -253,7 +253,8 @@ typedef struct tagVI_MANAGER
 VI_MANAGER_T* VIM_GetIns(void);
 
 //!vstd������̬�ı�(�Ƚ��鷳).
-int 	VIM_Init(VI_MANAGER_T* pThis, VIDEO_NORM_E vstd);
+//int 	VIM_Init(VI_MANAGER_T* pThis, VIDEO_NORM_E vstd);
+int vim_init(VIDEO_NORM_E vstd);
 int 	VIM_Start(VI_MANAGER_T* pThis, int chn);
 int 	VIM_Stop(VI_MANAGER_T* pThis, int chn);
 void 	VIM_Exit(VI_MANAGER_T* pThis);
