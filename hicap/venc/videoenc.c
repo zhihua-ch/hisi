@@ -3,6 +3,7 @@
 #include "pciv_stream.h"*/
 #include "VideoEnc.h"
 #include "Capture.h"
+#include "sample_comm.h"
 //!private
 #define NO_SNAP_IN_LIB 1
 int GetSubTypeByType(VENC_CHN_T* vchn, enum capture_channel_t type)
@@ -1110,6 +1111,7 @@ int VEncChn_SetAttr(VENC_CHN_T* vchn, enum capture_channel_t type, VENC_CHN_ATTR
 #else
 	VEncChn_SetAttr_General(vchn,type,attr);
 #endif
+	return 0;
 }
 
 int VEncChn_Start(VENC_CHN_T* vchn, enum capture_channel_t type)

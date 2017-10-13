@@ -76,7 +76,7 @@ int VencGetThread(void *arg){
 	
 	Capture_Dev_t* pThis = (Capture_Dev_t*)arg;
     //osd time
-    pThis->vi_chn[0].venc_chn_t.venc_chn[0].started == 1;
+    pThis->vi_chn[0].venc_chn_t.venc_chn[0].started = 1;
 
     VENC_CHN_T* pVChnInfo = &pThis->vi_chn[0].venc_chn_t;
 

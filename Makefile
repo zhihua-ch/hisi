@@ -22,15 +22,15 @@ INC_FLAGS += -I$(BASEDIR)/include/libhicap
 HIARCH := hi3521
 
 CFLAGS := -Wall -g $(INC_FLAGS) -D$(HIARCH) -lpthread -lm
-
-myrec : $(OBJS)
+CFLAGS += -Wl,-gc-sections 
+myrec :%: $(OBJS)
 #	$(CC) $(CFLAGS) $(COMPILEOPT) -o $@ $+ $(LFLAGS) -Wl,-Map,$(DIST_MAP)
 	$(CC) $(CFLAGS) -lpthread -lm -o $@ $^ $(COMLIBS_HISI)
 #.c.o:
-	$(CC) -c $(CFLAGS) $< -o $@ 
+#	$(CC) -c $(CFLAGS) $< -o $@ 
 
 #.cpp.o:
-	$(CPP)  $(CFLAGS) -c -o $@ $<
+#	$(CPP)  $(CFLAGS) -c -o $@ $<
 
 clean:
 	rm $(OBJS) -f
